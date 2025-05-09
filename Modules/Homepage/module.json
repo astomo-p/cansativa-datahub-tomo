@@ -1,0 +1,11 @@
+{
+    "name": "Homepage",
+    "alias": "homepage",
+    "description": "",
+    "keywords": [],
+    "priority": 0,
+    "providers": [
+        "Modules\\Homepage\\App\\Providers\\HomepageServiceProvider"
+    ],
+    "files": []
+}
