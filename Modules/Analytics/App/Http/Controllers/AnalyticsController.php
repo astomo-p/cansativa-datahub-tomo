@@ -8,6 +8,8 @@ use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Google\Analytics\Data\V1beta\Client\BetaAnalyticsDataClient;
 use Google\Analytics\Data\V1beta\RunReportRequest;
+use Google\Analytics\Data\V1beta\DateRange;
+use Google\Analytics\Data\V1beta\Dimension;
 
 class AnalyticsController extends Controller
 {
@@ -16,10 +18,19 @@ class AnalyticsController extends Controller
      */
     public function analyticsData()
     {
-            $client = new BetaAnalyticsDataClient();
+            $dir = dirname(__FILE__,6);
+            $ranges = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-05-14']);
+            $date_range = [$ranges];
+            $dimension = new Dimension(['name'=>'locales','dimensionExpression'=>['concatenate'=>['dimensionNames'=>['city','country'],'delimiter'=>',']]]);
+            $dimensions = [$dimension];
+            $client = new BetaAnalyticsDataClient([
+                'credentials' => $dir . '/storage/app/analytics/analytics-credentials.json'
+            ]);
 
             $request = new RunReportRequest([
-                'property' => 'properties/' . env('ANALYTICS_PROPERTY')
+                'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+                'date_ranges' => $date_range,
+                'dimensions' => $dimensions
             ]);
             $response = $client->runReport($request);
             $res = [];
