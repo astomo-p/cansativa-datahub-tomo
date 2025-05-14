@@ -10,6 +10,7 @@ use Google\Analytics\Data\V1beta\Client\BetaAnalyticsDataClient;
 use Google\Analytics\Data\V1beta\RunReportRequest;
 use Google\Analytics\Data\V1beta\DateRange;
 use Google\Analytics\Data\V1beta\Dimension;
+use Google\Analytics\Data\V1beta\Metric;
 
 class AnalyticsController extends Controller
 {
@@ -21,23 +22,36 @@ class AnalyticsController extends Controller
             $dir = dirname(__FILE__,6);
             $ranges = new DateRange(['start_date' => '2025-01-01', 'end_date' => '2025-05-14']);
             $date_range = [$ranges];
-            $dimension = new Dimension(['name'=>'locales','dimensionExpression'=>['concatenate'=>['dimensionNames'=>['city','country'],'delimiter'=>',']]]);
-            $dimensions = [$dimension];
+            $dimensions = [
+                new Dimension(['name'=>'browser']),
+                new Dimension(['name'=>'country']),
+                new Dimension(['name'=>'city'])
+            ];
+            $metrics = [
+                new Metric(['name'=>'activeUsers']),
+                new Metric(['name'=>'newUsers']),
+                new Metric(['name'=>'totalUsers'])
+            ];
             $client = new BetaAnalyticsDataClient([
-                'credentials' => $dir . '/storage/app/analytics/analytics-credentials.json'
+               'credentials' => $dir . '/storage/app/analytics/analytics-credentials.json'
             ]);
 
             $request = new RunReportRequest([
                 'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
                 'date_ranges' => $date_range,
-                'dimensions' => $dimensions
+                'dimensions' => $dimensions,
+                'metrics' => $metrics,
+                'limit' => 100
             ]);
             $response = $client->runReport($request);
             $res = [];
             foreach ($response->getRows() as $row) {
-                foreach ($row->getDimensionValues() as $dimensionValue) {
-                    array_push($res,$dimensionValue->getValue());
-                }
+                $dimensionValue = $row->getDimensionValues();
+                array_push($res,[
+                    "Browser"=>$dimensionValue[0]->getValue(),
+                    "Country"=>$dimensionValue[1]->getValue(),
+                    "City"=>$dimensionValue[2]->getValue()
+                ]);
             }
             return response(["status"=>"success","data"=>$res],200);
     }
