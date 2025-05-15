@@ -15,6 +15,12 @@ use Google\Analytics\Data\V1beta\Metric;
 class AnalyticsController extends Controller
 {
     /**
+     * List of traits used in this controller.
+     */
+    use \Modules\Core\Traits\ApiResponder;
+
+
+    /**
      * First trial
      */
     public function analyticsData()
@@ -30,7 +36,8 @@ class AnalyticsController extends Controller
             $metrics = [
                 new Metric(['name'=>'activeUsers']),
                 new Metric(['name'=>'newUsers']),
-                new Metric(['name'=>'totalUsers'])
+                new Metric(['name'=>'totalUsers']),
+                new Metric(['name'=>'bounceRate'])
             ];
             $client = new BetaAnalyticsDataClient([
                'credentials' => $dir . '/storage/app/analytics/analytics-credentials.json'
@@ -52,8 +59,17 @@ class AnalyticsController extends Controller
                     "Country"=>$dimensionValue[1]->getValue(),
                     "City"=>$dimensionValue[2]->getValue()
                 ]);
+                $metricsValue = $row->getMetricValues();
+                array_push($res,[
+                    "Active Users"=>$metricsValue[0]->getValue(),
+                    "New Users"=>$metricsValue[1]->getValue(),
+                    "Total Users"=>$metricsValue[2]->getValue(),
+                    "Bounce Rate"=>$metricsValue[3]->getValue()
+                ]);
             }
-            return response(["status"=>"success","data"=>$res],200);
+           // array_push($res,env('APP_URL'));
+           // return response(["status"=>"success","data"=>$res],200);
+           return $this->success($res, 'Analytics data retrieved successfully',201);
     }
 
     /**
