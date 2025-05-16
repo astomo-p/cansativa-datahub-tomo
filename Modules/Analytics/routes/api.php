@@ -19,6 +19,8 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('analytics-monthly-visitor', [AnalyticsController::class,"analyticsMonthlyVisitor"])->name('analytics.monthly.visitor');
     Route::get('analytics-bounce-rate', [AnalyticsController::class,"analyticsBounceRate"]);
     Route::get('analytics-three-month-visitor', [AnalyticsController::class,"analyticsThreeMonthVisitor"]);
+    Route::get('analytics-thirty-day-visitor', [AnalyticsController::class,"analyticsThirtyDayVisitor"]);
+    Route::get('analytics-twentyfour-hour-visitor', [AnalyticsController::class,"analyticsTwentyFourHourVisitor"]);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {
