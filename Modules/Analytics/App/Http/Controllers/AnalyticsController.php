@@ -29,7 +29,7 @@ class AnalyticsController extends Controller
     {
         $dir = dirname(__FILE__,6);
         $this->analytics_client = new BetaAnalyticsDataClient([
-               'credentials' => $dir . '/storage/app/analytics/analytics-credentials.json'
+               'credentials' => $dir . env('ANALYTICS_CREDENTIAL_PATH')
             ]); 
     }
 
@@ -347,9 +347,239 @@ class AnalyticsController extends Controller
             ]);
             
         }
-         // return response(["status"=>"success","data"=>$res],200);
        return $this->success($res, 'Analytics twenty four hour visitor retrieved successfully',200);
     }
+
+    /**
+     * return the now on page data from Google Analytics.
+     */
+    public function analyticsNowOnPage()
+    {
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day']),
+            new Dimension(['name'=>'pagePath'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'activeUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $day_now = date('d');
+        $day_before = date('d',strtotime('-1 day')); 
+        $month_now = date('m');
+        $total_day_now = 0;
+        $total_day_before = 0;
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == $month_now && $dimension_value[1]->getValue() == $day_now){
+                $total_day_now += (int) $metrics_value[0]->getValue();
+            }
+            else if($dimension_value[0]->getValue() == $month_now && $dimension_value[1]->getValue() == $day_before){
+                $total_day_before += (int) $metrics_value[0]->getValue();
+            }
+        }
+        $delta = $total_day_now - $total_day_before;
+        array_push($res,[
+            "users_now"=>$total_day_now,
+            "users_yesterday"=>$total_day_before,
+            "delta" => ($delta > 0) ? "+$delta" : "$delta",
+        ]);
+       return $this->success($res, 'Analytics now on page retrieved successfully',200);
+    }
+
+    /**
+     * return the total user registered data from Google Analytics.
+     */
+    public function totalUserRegistered()
+    {
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'totalUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_users_regist = 0;
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            $total_users_regist += (int) $metrics_value[0]->getValue();
+        }
+        array_push($res,[
+            "total_users_registered"=>$total_users_regist
+        ]);
+       return $this->success($res, 'Analytics total user registered retrieved successfully',200);
+    }
+
+    /**
+     * return the total seven day visitor data from Google Analytics.
+     */
+    public function analyticsTotalSevenDayVisitor()
+    {
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'totalUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_users = 0;
+        $seven_day = [
+            date('d', strtotime('-6 day')),
+            date('d', strtotime('-5 day')),
+            date('d', strtotime('-4 day')),
+            date('d', strtotime('-3 day')),
+            date('d', strtotime('-2 day')),
+            date('d', strtotime('-1 day')),
+            date('d')
+        ];
+       
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == date('m')){
+               switch($dimension_value[1]->getValue()){
+                    case $seven_day[0]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[1]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[2]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[3]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[4]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[5]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day[6]:
+                        $total_users += (int) $metrics_value[0]->getValue();
+                        break;
+                }
+               }
+            }
+            
+        array_push($res,[
+            "total_seven_day_visitor"=>$total_users
+        ]);
+       return $this->success($res, 'Analytics total seven day visitor retrieved successfully',200);
+    }
+
+    /**
+     * return the total seven day new user data from Google Analytics.
+     */
+    public function analyticsTotalSevenDayNewUser(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'newUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_users_new = 0;
+        $seven_day_new_user = [
+            date('d', strtotime('-6 day')),
+            date('d', strtotime('-5 day')),
+            date('d', strtotime('-4 day')),
+            date('d', strtotime('-3 day')),
+            date('d', strtotime('-2 day')),
+            date('d', strtotime('-1 day')),
+            date('d')
+        ];
+       
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == date('m')){
+               switch($dimension_value[1]->getValue()){
+                    case $seven_day_new_user[0]:
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day_new_user[1]:
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day_new_user[2]:
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day_new_user[3]:
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day_new_user[4]:
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;
+                    case $seven_day_new_user[5]:
+                        $total_users_new += (int) $metrics_value
+                        ->getValue();
+                        break;
+                    case $seven_day_new_user[6]:    
+                        $total_users_new += (int) $metrics_value[0]->getValue();
+                        break;  
+                    }
+                }
+            }
+        array_push($res,[
+            "total_seven_day_new_user"=>$total_users_new
+        ]); 
+         return $this->success($res, 'Analytics total seven day new user retrieved successfully',200);
+    }
+
 
     /**
      * Display a listing of the resource.
