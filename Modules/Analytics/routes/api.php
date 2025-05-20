@@ -25,6 +25,8 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('analytics-total-user-registered', [AnalyticsController::class,"totalUserRegistered"]);
     Route::get('analytics-total-seven-day-visitor', [AnalyticsController::class,"analyticsTotalSevenDayVisitor"]);
     Route::get('analytics-total-seven-day-new-user',[AnalyticsController::class,"analyticsTotalSevenDayNewUser"]);
+    Route::get('analytics-total-thirty-day-visitor',[AnalyticsController::class,"analyticsTotalThirtyDayVisitor"]);
+    Route::get('analytics-total-thirty-day-new-user',[AnalyticsController::class,"analyticsTotalThirtyDayNewUser"]);
 });
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {

@@ -17,7 +17,7 @@ class AnalyticsController extends Controller
     /**
      * List of traits used in this controller.
      */
-    use \Modules\Core\Traits\ApiResponder;
+    use \App\Traits\ApiResponder;
 
     /**
      * AnalyticsController properties.
@@ -128,7 +128,7 @@ class AnalyticsController extends Controller
             "October"=>$total_10,
             "November"=>$total_11,
             "December"=>$total_12]);
-           return $this->success($res, 'Analytics monthly visitor retrieved successfully',200);
+           return $this->successResponse($res, 'Analytics monthly visitor retrieved successfully',200);
     }
 
     /**
@@ -164,7 +164,7 @@ class AnalyticsController extends Controller
         array_push($res,[
             "bounce_rate"=>$bounce_total
         ]);
-       return $this->success($res, 'Analytics bounce rate retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics bounce rate retrieved successfully',200);
     }
 
     /**
@@ -233,7 +233,7 @@ class AnalyticsController extends Controller
             $month_name[$three_month[1]]=>$month_2,
             $month_name[$three_month[2]]=>$month_3
         ]);
-       return $this->success($res, 'Analytics three month visitor retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics three month visitor retrieved successfully',200);
     }
 
 
@@ -289,7 +289,7 @@ class AnalyticsController extends Controller
             ]);
             
         }
-        return $this->success($res, 'Analytics thirty day visitor retrieved successfully',200);
+        return $this->successResponse($res, 'Analytics thirty day visitor retrieved successfully',200);
     }
 
     /**
@@ -347,7 +347,7 @@ class AnalyticsController extends Controller
             ]);
             
         }
-       return $this->success($res, 'Analytics twenty four hour visitor retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics twenty four hour visitor retrieved successfully',200);
     }
 
     /**
@@ -397,7 +397,7 @@ class AnalyticsController extends Controller
             "users_yesterday"=>$total_day_before,
             "delta" => ($delta > 0) ? "+$delta" : "$delta",
         ]);
-       return $this->success($res, 'Analytics now on page retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics now on page retrieved successfully',200);
     }
 
     /**
@@ -434,7 +434,7 @@ class AnalyticsController extends Controller
         array_push($res,[
             "total_users_registered"=>$total_users_regist
         ]);
-       return $this->success($res, 'Analytics total user registered retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics total user registered retrieved successfully',200);
     }
 
     /**
@@ -506,7 +506,7 @@ class AnalyticsController extends Controller
         array_push($res,[
             "total_seven_day_visitor"=>$total_users
         ]);
-       return $this->success($res, 'Analytics total seven day visitor retrieved successfully',200);
+       return $this->successResponse($res, 'Analytics total seven day visitor retrieved successfully',200);
     }
 
     /**
@@ -577,9 +577,90 @@ class AnalyticsController extends Controller
         array_push($res,[
             "total_seven_day_new_user"=>$total_users_new
         ]); 
-         return $this->success($res, 'Analytics total seven day new user retrieved successfully',200);
+         return $this->successResponse($res, 'Analytics total seven day new user retrieved successfully',200);
     }
 
+    /**
+     * return the total thirty day visitor data from Google Analytics.
+     */
+    public function analyticsTotalThirtyDayVisitor()
+    {
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'totalUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_users_thirty_day = 0;
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == date('m')){
+                if($dimension_value[1]->getValue() > 0){
+                    $total_users_thirty_day += (int) $metrics_value[0]->getValue();
+                }
+            }
+        }
+        array_push($res,[
+            "total_thirty_day_visitor"=>$total_users_thirty_day
+        ]);
+       return $this->successResponse($res, 'Analytics total thirty day visitor retrieved successfully',200);
+    }
+
+    /**
+     * return the total thirty day new user data from Google Analytics.
+     */
+    public function analyticsTotalThirtyDayNewUser()
+    {
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'newUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_users_new_thirty_day = 0;
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == date('m')){
+                if($dimension_value[1]->getValue() > 0){
+                    $total_users_new_thirty_day += (int) $metrics_value[0]->getValue();
+                }
+            }
+        }
+        array_push($res,[
+            "total_thirty_day_new_user"=>$total_users_new_thirty_day
+        ]);
+       return $this->successResponse($res, 'Analytics total thirty day new user retrieved successfully',200);
+    }
 
     /**
      * Display a listing of the resource.
