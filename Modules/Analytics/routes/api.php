@@ -27,6 +27,10 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('analytics-total-seven-day-new-user',[AnalyticsController::class,"analyticsTotalSevenDayNewUser"]);
     Route::get('analytics-total-thirty-day-visitor',[AnalyticsController::class,"analyticsTotalThirtyDayVisitor"]);
     Route::get('analytics-total-thirty-day-new-user',[AnalyticsController::class,"analyticsTotalThirtyDayNewUser"]);
+    Route::get('analytics-total-seven-day-likes',[AnalyticsController::class,"analyticsTotalSevenDayLikes"]);
+    Route::get('analytics-total-seven-day-saves',[AnalyticsController::class,"analyticsTotalSevenDaySaves"]);
+    Route::get('analytics-total-seven-day-comments',[AnalyticsController::class,"analyticsTotalSevenDayComments"]);
+    
 });
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {

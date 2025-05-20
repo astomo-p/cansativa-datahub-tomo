@@ -663,6 +663,48 @@ class AnalyticsController extends Controller
     }
 
     /**
+     * return the total seven day likes data from database.
+     */
+    public function analyticsTotalSevenDayLikes(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $res = [];
+        $total_likes = 0;
+        array_push($res,[
+            "total_likes"=>$total_likes
+        ]); 
+         return $this->successResponse($res, 'Analytics total seven day like retrieved successfully',200);
+    }
+
+    /**
+     * return the total seven day saves data from database.
+     */
+    public function analyticsTotalSevenDaySaves(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $res = [];
+        $total_saves = 0;
+        array_push($res,[
+            "total_saves"=>$total_saves
+        ]); 
+         return $this->successResponse($res, 'Analytics total seven day save retrieved successfully',200);
+    }
+
+    /**
+     * return the total seven day comments data from database.
+     */
+    public function analyticsTotalSevenDayComments(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $res = [];
+        $total_comments = 0;
+        array_push($res,[
+            "total_comments"=>$total_comments
+        ]); 
+         return $this->successResponse($res, 'Analytics total seven day comment retrieved successfully',200);
+    }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
