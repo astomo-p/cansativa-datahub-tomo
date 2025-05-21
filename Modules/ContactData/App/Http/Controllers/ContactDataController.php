@@ -6,6 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
+use Modules\ContactData\App\Models\Contacts;
+use Modules\ContactData\App\Models\ContactTypes;
+use Illuminate\Support\Facades\DB;
+
 
 class ContactDataController extends Controller
 {
@@ -14,7 +18,7 @@ class ContactDataController extends Controller
      *
      * @return void
      */
-    use \Modules\Core\Traits\ApiResponder;
+    use \App\Traits\ApiResponder;
     
     /**
      * Get top five pharmacies.
@@ -23,14 +27,15 @@ class ContactDataController extends Controller
      */
     public function topFiveAreaPharmacies(Request $request)
     {
-        $res = [
+       /*  $res = [
             '11245' => 1000,
             '11246' => 900,
             '11247' => 800,
             '11248' => 700,
             '11249' => 600
-        ];
-       return $this->success($res,'Top five area pharmacies',200);
+        ]; */
+        $res = ContactTypes::find(1)->contacts;
+       return $this->successResponse($res,'Top five area pharmacies',200);
     }
     /**
      * Get top five purchase pharmacies.
@@ -46,7 +51,7 @@ class ContactDataController extends Controller
             'Nicotiana Pharmaceutical' => 125000,
             'Cannabinaceae Pharmacetical' => 600000
         ];
-       return $this->success($res,'Top five purchase pharmacies',200);
+       return $this->successResponse($res,'Top five purchase pharmacies',200);
     }
     /**
      * Get contact growth.
@@ -55,6 +60,12 @@ class ContactDataController extends Controller
      */
     public function contactGrowth(Request $request)
     {
+        $now = date('Y');
+        $supplier_total_month_05 = ContactTypes::find(1)->contacts()
+        ->whereMonth('created_date', 5)
+        ->whereYear('created_date', $now)
+        ->count();
+
         $res = [
           'Pharmacies' => [
             'January' => 100,
@@ -84,12 +95,12 @@ class ContactDataController extends Controller
             'November' => 550,
             'December' => 600
           ],
-          'Subscribers' => [
+          'Suppliers' => [
             'January' => 20,
             'February' => 40,
             'March' => 60,
             'April' => 80,
-            'May' => 100,
+            'May' => $supplier_total_month_05,
             'June' => 120,
             'July' => 140,
             'August' => 160,
@@ -113,7 +124,7 @@ class ContactDataController extends Controller
             'December' => 120
           ]
         ];
-       return $this->success($res,'Contact growth',200);
+       return $this->successResponse($res,'Contact growth',200);
     }
     /**
      * Get top contact card.
@@ -151,7 +162,7 @@ class ContactDataController extends Controller
             return $this->error('Invalid type',400);
         }
             
-       return $this->success($res,'Top contact card',200);
+       return $this->successResponse($res,'Top contact card',200);
     }
 
     /**
