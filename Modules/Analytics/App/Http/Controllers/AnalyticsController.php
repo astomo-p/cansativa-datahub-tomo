@@ -671,8 +671,10 @@ class AnalyticsController extends Controller
     public function analyticsTotalSevenDayLikes(){
         $year = date('Y');
         $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-7 days'));
         $res = [];
-        $total_likes = VisitorLikes::sum('user_likes');
+        $total_likes = VisitorLikes::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)->sum('user_likes');
         array_push($res,[
             "total_likes"=>(int) $total_likes
         ]); 
@@ -685,8 +687,12 @@ class AnalyticsController extends Controller
     public function analyticsTotalSevenDaySaves(){
         $year = date('Y');
         $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-7 days'));
         $res = [];
-        $total_saves = UserSavedPosts::count();
+        $total_saves = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_saved', 1)
+        ->count();
         array_push($res,[
             "total_saves"=>$total_saves
         ]); 
@@ -699,8 +705,11 @@ class AnalyticsController extends Controller
     public function analyticsTotalSevenDayComments(){
         $year = date('Y');
         $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-7 days'));
         $res = [];
-        $total_comments = UserComments::count();
+        $total_comments = UserComments::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->count();;
         array_push($res,[
             "total_comments"=>$total_comments
         ]); 

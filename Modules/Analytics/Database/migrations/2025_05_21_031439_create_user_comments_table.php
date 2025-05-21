@@ -13,9 +13,15 @@ return new class extends Migration
     {
         Schema::create('user_comments', function (Blueprint $table) {
             $table->id();
-            $table->bigInteger('user_id')->nullable();
-            $table->string('comment')->nullable();
-            $table->timestamps();
+            $table->bigInteger('user_id');
+            $table->string('comment');
+            $table->char('status',256);
+            $table->bigInteger('commentable_id')->nullable();
+            $table->char('commentable_type', 256)->nullable();
+            $table->bigInteger('created_by');
+            $table->bigInteger('updated_by');
+            $table->datetime('created_date');
+            $table->datetime('updated_date');
         });
     }
 
