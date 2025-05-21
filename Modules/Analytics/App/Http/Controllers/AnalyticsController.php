@@ -11,6 +11,9 @@ use Google\Analytics\Data\V1beta\RunReportRequest;
 use Google\Analytics\Data\V1beta\DateRange;
 use Google\Analytics\Data\V1beta\Dimension;
 use Google\Analytics\Data\V1beta\Metric;
+use Modules\Analytics\App\Models\UserComments;
+use Modules\Analytics\App\Models\VisitorLikes;
+use Modules\Analytics\App\Models\UserSavedPosts;
 
 class AnalyticsController extends Controller
 {
@@ -669,9 +672,9 @@ class AnalyticsController extends Controller
         $year = date('Y');
         $now = date('Y-m-d');
         $res = [];
-        $total_likes = 0;
+        $total_likes = VisitorLikes::sum('user_likes');
         array_push($res,[
-            "total_likes"=>$total_likes
+            "total_likes"=>(int) $total_likes
         ]); 
          return $this->successResponse($res, 'Analytics total seven day like retrieved successfully',200);
     }
@@ -683,7 +686,7 @@ class AnalyticsController extends Controller
         $year = date('Y');
         $now = date('Y-m-d');
         $res = [];
-        $total_saves = 0;
+        $total_saves = UserSavedPosts::count();
         array_push($res,[
             "total_saves"=>$total_saves
         ]); 
@@ -697,7 +700,7 @@ class AnalyticsController extends Controller
         $year = date('Y');
         $now = date('Y-m-d');
         $res = [];
-        $total_comments = 0;
+        $total_comments = UserComments::count();
         array_push($res,[
             "total_comments"=>$total_comments
         ]); 
