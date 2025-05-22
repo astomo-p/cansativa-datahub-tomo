@@ -19,9 +19,12 @@ return new class extends Migration
             $table->bigInteger('published_by');
             $table->date('publication_date')->nullable();
             $table->string('content')->nullable();
-            $table->addColumn('bit', 'comment_setting', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
-            $table->addColumn('bit', 'like_setting', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
-            $table->addColumn('bit', 'sponsored_post', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            //$table->addColumn('bit', 'comment_setting', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            //$table->addColumn('bit', 'like_setting', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            //$table->addColumn('bit', 'sponsored_post', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            $table->boolean('comment_setting')->nullable();
+            $table->boolean('like_setting')->nullable();
+            $table->boolean('sponsored_post')->nullable();
             $table->char('tags',256)->nullable();
             $table->bigInteger('user_likes')->nullable();
             $table->bigInteger('created_by');

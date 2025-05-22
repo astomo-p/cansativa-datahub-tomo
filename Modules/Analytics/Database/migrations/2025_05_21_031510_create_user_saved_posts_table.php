@@ -15,8 +15,10 @@ return new class extends Migration
             $table->id();
             $table->bigInteger('user_id')->nullable();
             $table->bigInteger('post_id')->nullable();
-            $table->addColumn('bit', 'is_like', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
-            $table->addColumn('bit', 'is_saved', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            //$table->addColumn('bit', 'is_like', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            //$table->addColumn('bit', 'is_saved', ['length' => 1])->nullable()->default(DB::raw('NULL::"BIT"'));
+            $table->boolean('is_like')->nullable();
+            $table->boolean('is_saved')->nullable();
             $table->bigInteger('rank')->nullable();
             $table->bigInteger('created_by');
             $table->bigInteger('updated_by');
