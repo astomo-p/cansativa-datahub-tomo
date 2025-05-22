@@ -3,6 +3,7 @@
 namespace Modules\ContactData\Database\Seeders;
 
 use Illuminate\Database\Seeder;
+use Modules\ContactData\Database\Seeders\SeedPlacePublishSeeder;
 
 class ContactDataDatabaseSeeder extends Seeder
 {
@@ -11,6 +12,6 @@ class ContactDataDatabaseSeeder extends Seeder
      */
     public function run(): void
     {
-        // $this->call([]);
+        $this->call(SeedPlacePublishSeeder::class);
     }
 }
