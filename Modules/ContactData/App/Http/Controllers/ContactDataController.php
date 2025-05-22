@@ -27,14 +27,18 @@ class ContactDataController extends Controller
      */
     public function topFiveAreaPharmacies(Request $request)
     {
-       /*  $res = [
-            '11245' => 1000,
-            '11246' => 900,
-            '11247' => 800,
-            '11248' => 700,
-            '11249' => 600
-        ]; */
-        $res = ContactTypes::find(1)->contacts;
+        $results = ContactTypes::find(1)->contacts()
+        ->selectRaw("contacts.post_code,COUNT(contacts.post_code) AS total_pharmacies")
+        ->orderBy('total_pharmacies', 'desc')
+        ->groupBy('contacts.post_code')
+        ->take(5)->get();
+        $res = [];
+        foreach( $results as $result ){
+            $res[] = [
+                'post_code' => $result->post_code,
+                'total_pharmacies' => (int) $result->total_pharmacies
+            ];
+        }
        return $this->successResponse($res,'Top five area pharmacies',200);
     }
     /**
@@ -44,13 +48,19 @@ class ContactDataController extends Controller
      */
     public function topFivePurchasePharmacies(Request $request)
     {
-        $res = [
-            'Papaveraceae Pharmaceutical' => 1200000,
-            'Psilocybin Pharmaceutical' => 1600000,
-            'Amphetamine Pharmaceutical' => 750000,
-            'Nicotiana Pharmaceutical' => 125000,
-            'Cannabinaceae Pharmacetical' => 600000
-        ];
+       
+        $results = ContactTypes::find(1)->contacts()
+        ->select('contacts.contact_name','contacts.total_purchase')
+        ->orderBy('total_purchase', 'desc')
+        ->take(5)
+        ->get();
+        $res = [];
+        foreach( $results as $result ){
+            $res[] = [
+                'pharmacy_name' => $result->contact_name,
+                'total_purchase' => (int) $result->total_purchase
+            ];
+        }
        return $this->successResponse($res,'Top five purchase pharmacies',200);
     }
     /**
@@ -61,46 +71,43 @@ class ContactDataController extends Controller
     public function contactGrowth(Request $request)
     {
         $now = date('Y');
-        $supplier_total_month_05 = ContactTypes::find(1)->contacts()
-        ->whereMonth('created_date', 5)
-        ->whereYear('created_date', $now)
-        ->count();
+        $months = [
+            1 => 'January',
+            2 => 'February',   
+            3 => 'March',
+            4 => 'April',
+            5 => 'May',
+            6 => 'June',
+            7 => 'July',
+            8 => 'August',
+            9 => 'September',
+            10 => 'October',
+            11 => 'November',
+            12 => 'December'
+        ];
+
+        //pharmacy
+        $pharmacy = [];
+        for($i = 1; $i <= 12; $i++){
+            $pharmacy[$i] = ContactTypes::find(1)->contacts()
+            ->whereMonth('created_date', $i)
+            ->whereYear('created_date', $now)
+            ->count();
+        }
+        $pharmacy_result = [];
+        foreach($pharmacy as $key => $value){
+            $pharmacy_result[$months[$key]] = (int) $value;
+        }
+
 
         $res = [
-          'Pharmacies' => [
-            'January' => 100,
-            'February' => 200,
-            'March' => 300,
-            'April' => 400,
-            'May' => 500,
-            'June' => 600,
-            'July' => 700,
-            'August' => 800,
-            'September' => 900,
-            'October' => 1000,
-            'November' => 1100,
-            'December' => 1200
-          ],
-          'Distributors' => [
-            'January' => 50,
-            'February' => 100,
-            'March' => 150,
-            'April' => 200,
-            'May' => 250,
-            'June' => 300,
-            'July' => 350,
-            'August' => 400,
-            'September' => 450,
-            'October' => 500,
-            'November' => 550,
-            'December' => 600
-          ],
+          'Pharmacies' => $pharmacy_result,
           'Suppliers' => [
             'January' => 20,
             'February' => 40,
             'March' => 60,
             'April' => 80,
-            'May' => $supplier_total_month_05,
+            'May' => 0,
             'June' => 120,
             'July' => 140,
             'August' => 160,
@@ -109,7 +116,7 @@ class ContactDataController extends Controller
             'November' => 220,
             'December' => 240
           ],
-          'Pharmacy Contacts' => [
+          'General Newsletter' => [
             'January' => 10,
             'February' => 20,
             'March' => 30,
