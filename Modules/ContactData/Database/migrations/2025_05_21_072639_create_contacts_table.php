@@ -34,10 +34,15 @@ return new class extends Migration
             //$table->addColumn('bit', 'community_user', ['length' => 1]);
            // $table->addColumn('bit', 'whatsapp_subscription', ['length' => 1]);
 
-            $table->enum('cansativa_newsletter', [0, 1])->nullable(); // Assuming ENUM type
+           /*  $table->enum('cansativa_newsletter', [0, 1])->nullable(); // Assuming ENUM type
             $table->enum('community_user', [0, 1])->nullable(); // Assuming ENUM type
             $table->enum('whatsapp_subscription', [0, 1])->nullable(); // Assuming ENUM type
-            
+             */
+
+            $table->boolean('cansativa_newsletter')->default(0); // Assuming BIT(1) or similar
+            $table->boolean('community_user')->default(0); // Assuming BIT(1) or similar
+            $table->boolean('whatsapp_subscription')->default(0); // Assuming BIT(1) or similar
+
             $table->bigInteger('contact_type_id');
             $table->bigInteger('contact_parent_id')->nullable()->default(null);
 
