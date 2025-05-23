@@ -19,6 +19,28 @@ class ContactDataController extends Controller
      * @return void
      */
     use \App\Traits\ApiResponder;
+
+    /**
+     * list of contact type names 
+     */
+
+    private $contact_pharmacy = 0;
+    private $contact_supplier = 0;
+    private $contact_community = 0;
+    private $contact_general_newsletter = 0;
+    private $contact_pharmacy_db = 0;
+
+    /**
+     * constructor
+     */
+    public function __construct()
+    {
+        $this->contact_pharmacy = ContactTypes::where('contact_type_name', 'PHARMACY')->first();
+        $this->contact_supplier = ContactTypes::where('contact_type_name', 'SUPPLIER')->first();
+        $this->contact_community = ContactTypes::where('contact_type_name', 'COMMUNITY')->first();
+        $this->contact_general_newsletter = ContactTypes::where('contact_type_name', 'GENERAL NEWSLETTER')->first();
+        $this->contact_pharmacy_db = ContactTypes::where('contact_type_name', 'PHARMACY DATABASE')->first();
+    }
     
     /**
      * Get top five pharmacies.
@@ -89,7 +111,7 @@ class ContactDataController extends Controller
         //pharmacy
         $pharmacy = [];
         for($i = 1; $i <= 12; $i++){
-            $pharmacy[$i] = ContactTypes::find(1)->contacts()
+            $pharmacy[$i] = ContactTypes::find($this->contact_pharmacy->id)->contacts()
             ->whereMonth('created_date', $i)
             ->whereYear('created_date', $now)
             ->count();
@@ -99,37 +121,64 @@ class ContactDataController extends Controller
             $pharmacy_result[$months[$key]] = (int) $value;
         }
 
+        //supplier
+        $supplier = [];
+        for($i = 1; $i <= 12; $i++){
+            $supplier[$i] = ContactTypes::find($this->contact_supplier->id)->contacts()
+            ->whereMonth('created_date', $i)
+            ->whereYear('created_date', $now)
+            ->count();
+        }
+        $supplier_result = [];
+        foreach($supplier as $key => $value){
+            $supplier_result[$months[$key]] = (int) $value;
+        }
+
+        //community
+        $community = [];
+        for($i = 1; $i <= 12; $i++){
+            $community[$i] = ContactTypes::find($this->contact_community->id)->contacts()
+            ->whereMonth('created_date', $i)
+            ->whereYear('created_date', $now)
+            ->count();
+        }
+        $community_result = [];
+        foreach($community as $key => $value){
+            $community_result[$months[$key]] = (int) $value;
+        }
+
+        //general newsletter
+        $general_newsletter = [];
+        for($i = 1; $i <= 12; $i++){
+            $general_newsletter[$i] = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+            ->whereMonth('created_date', $i)
+            ->whereYear('created_date', $now)
+            ->count();
+        }
+        $general_newsletter_result = [];
+        foreach($general_newsletter as $key => $value){
+            $general_newsletter_result[$months[$key]] = (int) $value;
+        }
+
+        //pharmacy db
+        $pharmacy_db = [];
+        for($i = 1; $i <= 12; $i++){
+            $pharmacy_db[$i] = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+            ->whereMonth('created_date', $i)
+            ->whereYear('created_date', $now)
+            ->count();
+        }
+        $pharmacy_db_result = [];
+        foreach($pharmacy_db as $key => $value){
+            $pharmacy_db_result[$months[$key]] = (int) $value;
+        }
 
         $res = [
           'Pharmacies' => $pharmacy_result,
-          'Suppliers' => [
-            'January' => 20,
-            'February' => 40,
-            'March' => 60,
-            'April' => 80,
-            'May' => 0,
-            'June' => 120,
-            'July' => 140,
-            'August' => 160,
-            'September' => 180,
-            'October' => 200,
-            'November' => 220,
-            'December' => 240
-          ],
-          'General Newsletter' => [
-            'January' => 10,
-            'February' => 20,
-            'March' => 30,
-            'April' => 40,
-            'May' => 50,
-            'June' => 60,
-            'July' => 70,
-            'August' => 80,
-            'September' => 90,
-            'October' => 100,
-            'November' => 110,
-            'December' => 120
-          ]
+          'Suppliers' => $supplier_result,
+          'General Newsletter' => $general_newsletter_result,
+          'Community' => $community_result,
+          'Pharmacy Database' => $pharmacy_db_result
         ];
        return $this->successResponse($res,'Contact growth',200);
     }
