@@ -673,8 +673,10 @@ class AnalyticsController extends Controller
         $now = date('Y-m-d');
         $start_date = date('Y-m-d', strtotime('-7 days'));
         $res = [];
-        $total_likes = VisitorLikes::where('created_date', '>=', $start_date)
-        ->where('created_date', '<=', $now)->sum('user_likes');
+        $total_likes = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_like', 1)
+        ->count();
         array_push($res,[
             "total_likes"=>(int) $total_likes
         ]); 
@@ -715,6 +717,206 @@ class AnalyticsController extends Controller
         ]); 
          return $this->successResponse($res, 'Analytics total seven day comment retrieved successfully',200);
     }
+
+    /**
+     * return the total thirty day likes data from database.
+     */
+    
+     public function analyticsTotalThirtyDayLikes(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-30 days'));
+        $res = [];
+        $total_likes = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_like', 1)
+        ->count();;
+        array_push($res,[
+            "total_likes"=>$total_likes
+        ]); 
+         return $this->successResponse($res, 'Analytics total thirty day likes retrieved successfully',200);
+    }
+
+    /**
+     * return the total thirty day saves data from database.
+     */
+    public function analyticsTotalThirtyDaySaves(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-30 days'));
+        $res = [];
+        $total_saves = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_saved', 1)
+        ->count();;
+        array_push($res,[
+            "total_saves"=>$total_saves
+        ]); 
+         return $this->successResponse($res, 'Analytics total thirty day save retrieved successfully',200);
+    }
+
+
+    /**
+     * return the total thirty day comments data from database.
+     */
+
+     public function analyticsTotalThirtyDayComments(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-30 days'));
+        $res = [];
+        $total_comments = UserComments::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->count();;
+        array_push($res,[
+            "total_comments"=>$total_comments
+        ]); 
+         return $this->successResponse($res, 'Analytics total thirty day comment retrieved successfully',200);
+    }
+
+    /**
+     * return the total twenty four hour likes data from database.
+     */
+
+     public function analyticsTotalTwentyFourHourLikes(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-1 days'));
+        $res = [];
+        $total_likes = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_like', 1)
+        ->count();;
+        array_push($res,[
+            "total_likes"=>$total_likes
+        ]); 
+         return $this->successResponse($res, 'Analytics total twenty four hour likes retrieved successfully',200);
+    }
+
+    /**
+     * return the total twenty four hour saves data from database.
+     */
+
+     public function analyticsTotalTwentyFourHourSaves(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-1 days'));
+        $res = [];
+        $total_saves = UserSavedPosts::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->where('is_saved', 1)
+        ->count();;
+        array_push($res,[
+            "total_saves"=>$total_saves
+        ]); 
+         return $this->successResponse($res, 'Analytics total twenty four hour save retrieved successfully',200);
+     }
+
+     /**
+      * return the total twenty four hour comments data from database.
+      */
+
+      public function analyticsTotalTwentyFourHourComments(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $start_date = date('Y-m-d', strtotime('-1 days'));
+        $res = [];
+        $total_comments = UserComments::where('created_date', '>=', $start_date)
+        ->where('created_date', '<=', $now)
+        ->count();;
+        array_push($res,[
+            "total_comments"=>$total_comments
+        ]); 
+         return $this->successResponse($res, 'Analytics total twenty four hour comment retrieved successfully',200);
+      }
+
+      /**
+       * return the total twenty four hour new user from Analytics
+       */
+
+       public function analyticsTotalTwentyFourHourNewUser(){
+        $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'newUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $total_new_user = 0;
+       
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == date('m') && $dimension_value[1]->getValue() == date('d')){
+                $total_new_user += (int) $metrics_value[0]->getValue();
+                }
+            }
+       
+        array_push($res,[
+            "total_new_user"=>$total_new_user
+        ]); 
+         return $this->successResponse($res, 'Analytics total twenty four hour new user retrieved successfully',200);
+       }
+
+       /**
+        * return the total twenty four hour visitor from Analytics
+        */
+
+        public function analyticsTotalTwentyFourHourVisitor(){
+             $year = date('Y');
+        $now = date('Y-m-d');
+        $ranges = new DateRange(['start_date' => "$year-01-01", 'end_date' => $now]);
+        $date_range = [$ranges];
+        $dimensions = [
+            new Dimension(['name'=>'month']),
+            new Dimension(['name'=>'hour']),
+            new Dimension(['name'=>'day'])
+        ];
+        $metrics = [
+            new Metric(['name'=>'activeUsers'])
+        ];
+        $request = new RunReportRequest([
+            'property' => 'properties/' . env('ANALYTICS_PROPERTY'),
+            'date_ranges' => $date_range,
+            'dimensions' => $dimensions,
+            'metrics' => $metrics,
+            'limit' => 100
+        ]);
+        $response = $this->analytics_client->runReport($request);
+        $res = [];
+        $twenty_four_hour = [];
+        $month = date('m');
+        $day = date('d');
+        $total_visitor = 0;
+        foreach ($response->getRows() as $row) {
+            $dimension_value = $row->getDimensionValues();
+            $metrics_value = $row->getMetricValues();
+            if($dimension_value[0]->getValue() == $month && $dimension_value[1]->getValue() == $day){
+                $total_visitor += (int) $metrics_value[0]->getValue();
+            }
+        }
+        array_push($res,[
+            "total_visitor"=>$total_visitor
+        ]);
+       
+       
+       return $this->successResponse($res, 'Analytics twenty four hour visitor retrieved successfully',200);
+    
+        }
+
 
     /**
      * Display a listing of the resource.
