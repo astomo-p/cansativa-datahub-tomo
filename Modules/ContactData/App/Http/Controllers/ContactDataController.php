@@ -513,6 +513,150 @@ class ContactDataController extends Controller
             return $this->successResponse(null,'General newsletter data updated successfully',200);
         }
 
+    /**
+     * Add pharmacy database data
+     */
+
+    public function addPharmacyDatabase(Request $request)
+    {
+        $request_data = json_decode($request->getContent(), true);
+
+        // Create the contact
+       // Contacts::create($request_data);
+       Contacts::insert($request_data);
+
+        return $this->successResponse(null,'Pharmacy database data added successfully',200);
+    }
+
+    /**
+     * Get pharmacy database by parent ID.
+     */
+
+    public function pharmacyDatabaseByParentId(Request $request,$parentId)
+    {
+        $results = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+        ->where('contact_parent_id', $parentId)
+        ->get();
+
+        if($results->isEmpty()){
+            return $this->errorResponse('Error',404, 'Pharmacy database not found');
+        }
+
+        //default pagination setup
+        $sort_column = explode('-',$request->get('sort', 'asc'))[0] ?? 'contacts.id';
+        $sort_direction = explode('-',$request->get('sort', 'asc'))[1] ?? 'asc';
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search');
+
+        //basic response metrics
+        $records_total = $results->count();
+        $records_filtered = $records_total;
+
+        if($search){
+            $search = trim($search);
+            $results = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+            ->where('contact_parent_id', $parentId)
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+            $records_filtered = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+            ->where('contact_parent_id', $parentId)
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->count();
+        } else {
+            $results = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+            ->where('contact_parent_id', $parentId)
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+            $records_filtered = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
+            ->where('contact_parent_id', $parentId)
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->count();
+        }
+
+        $res = [
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $results
+        ];
+
+       return $this->successResponse($res,'Pharmacy database by parent ID',200);
+    }
+
+
+    /**
+     * Display a listing of the resource.
+     */
+    public function index()
+    {
+        return view('contactdata::index');
+    }
+
+    /**
+     * Show the form for creating a new resource.
+     */
+    public function create()
+    {
+        return view('contactdata::create');
+    }
+
+    /**
+     * Store a newly created resource in storage.
+     */
+    public function store(Request $request): RedirectResponse
+    {
+        //
+    }
+
+    /**
+     * Show the specified resource.
+     */
+    public function show($id)
+    {
+        return view('contactdata::show');
+    }
+
+    /**
+     * Show the form for editing the specified resource.
+     */
+    public function edit($id)
+    {
+        return view('contactdata::edit');
+    }
+
+    /**
+     * Update the specified resource in storage.
+     */
+    public function update(Request $request, $id): RedirectResponse
+    {
+        //
+    }
+
+    /**
+     * Remove the specified resource from storage.
+     */
+    public function destroy($id)
+    {
+        //
+    }
+}
+
+     
 
     /**
      * Display a listing of the resource.
