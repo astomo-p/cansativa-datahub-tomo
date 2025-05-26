@@ -222,6 +222,212 @@ class ContactDataController extends Controller
     }
 
     /**
+     * Get all pharmacy data.
+     *
+     * @return Response
+     */
+    public function allPharmacyData(Request $request)
+    {
+        // default pagination setup
+        $sort_column = explode('-',$request->get('sort', 'asc'))[0] ?? 'contacts.id';
+        $sort_direction = explode('-',$request->get('sort', 'asc'))[1] ?? 'asc';
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search');
+
+        if($search){
+            $search = trim($search);
+            $results = ContactTypes::find($this->contact_pharmacy->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+        } else {
+            $results = ContactTypes::find($this->contact_pharmacy->id)->contacts()
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+        }
+
+        
+        $res = [];
+        foreach( $results as $result ){
+            $res[] = [
+                'contact_name' => $result->contact_name,
+                'post_code' => $result->post_code,
+                'total_purchase' => (int) $result->total_purchase
+            ];
+        }
+       return $this->successResponse($results,'All pharmacy data',200);
+    }
+
+    /**
+     * Get pharmacy data by ID.
+     *
+     * @return Response
+     */
+    public function pharmacyDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Pharmacy not found');
+        }
+        $res = [
+            'contact_name' => $result->contact_name,
+            'post_code' => $result->post_code,
+            'total_purchase' => (int) $result->total_purchase
+        ];
+       return $this->successResponse($result,'Pharmacy data by ID',200);
+    }
+
+    /** 
+     * Update pharmacy data by ID.
+     */
+
+    public function updatePharmacyDataById(Request $request, $id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Pharmacy not found');
+        }
+        $request_data = json_decode($request->getContent(), true);
+
+        // Update the contact
+       Contacts::where('id', $id)->update($request_data);
+
+        return $this->successResponse(null,'Pharmacy data updated successfully',200);
+    }
+
+    /** 
+     * Get all supplier data.
+     */
+    public function allSupplierData(Request $request)
+    {
+        // default pagination setup
+        $sort_column = explode('-',$request->get('sort', 'asc'))[0] ?? 'contacts.id';
+        $sort_direction = explode('-',$request->get('sort', 'asc'))[1] ?? 'asc';
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search');
+
+        //basic response metrics
+        $records_total = ContactTypes::find($this->contact_supplier->id)->contacts()->count();
+        $records_filtered = $records_total;
+
+        if($search){
+            $search = trim($search);
+            $results = ContactTypes::find($this->contact_supplier->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+
+            $records_filtered = ContactTypes::find($this->contact_supplier->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->count();
+        } else {
+            $results = ContactTypes::find($this->contact_supplier->id)->contacts()
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+        }
+
+        
+        $res = [
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $results
+        ];
+       
+       return $this->successResponse($res,'All supplier data',200);
+    }
+
+    /**
+     * Get all community data.
+     */
+
+    public function allCommunityData(Request $request)
+    {
+        // default pagination setup
+        $sort_column = explode('-',$request->get('sort', 'asc'))[0] ?? 'contacts.id';
+        $sort_direction = explode('-',$request->get('sort', 'asc'))[1] ?? 'asc';
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search');
+
+        //basic response metrics
+        $records_total = ContactTypes::find($this->contact_community->id)->contacts()->count();
+        $records_filtered = $records_total;
+
+        if($search){
+            $search = trim($search);
+            $results = ContactTypes::find($this->contact_community->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+            $records_filtered = ContactTypes::find($this->contact_community->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->count();
+        } else {
+            $results = ContactTypes::find($this->contact_community->id)->contacts()
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+        }
+
+        
+        $res = [
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $results
+        ];
+       
+       return $this->successResponse($res,'All community data',200);
+    }
+
+    /**
+     * add community data
+     */
+
+     public function addCommunityData(Request $request)
+     {
+        $request_data = json_decode($request->getContent(), true);
+
+        // Create the contact
+       // Contacts::create($request_data);
+       Contacts::insert($request_data);
+
+        return $this->successResponse(null,'Community data added successfully',200);
+     }
+
+    /**
      * Display a listing of the resource.
      */
     public function index()
