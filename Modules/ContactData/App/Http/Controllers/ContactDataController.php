@@ -427,6 +427,93 @@ class ContactDataController extends Controller
         return $this->successResponse(null,'Community data added successfully',200);
      }
 
+     /** 
+      * add general newsletter data
+      */
+        public function addGeneralNewsletterData(Request $request)
+        {
+            $request_data = json_decode($request->getContent(), true);
+
+            // Create the contact
+           // Contacts::create($request_data);
+           Contacts::insert($request_data);
+
+            return $this->successResponse(null,'General newsletter data added successfully',200);
+        }
+
+    /**
+     * get all general newsletter data
+     */
+     
+     public function allGeneralNewsletterData(Request $request)
+     {
+        // default pagination setup
+        $sort_column = explode('-',$request->get('sort', 'asc'))[0] ?? 'contacts.id';
+        $sort_direction = explode('-',$request->get('sort', 'asc'))[1] ?? 'asc';
+        $start = $request->get('start', 0);
+        $length = $request->get('length', 10);
+        $search = $request->get('search');
+
+        //basic response metrics
+        $records_total = ContactTypes::find($this->contact_general_newsletter->id)->contacts()->count();
+        $records_filtered = $records_total;
+
+        if($search){
+            $search = trim($search);
+            $results = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+            $records_filtered = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->count();
+        } else {
+            $results = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+            ->orderBy('contacts.'.$sort_column, $sort_direction)
+            ->take($length)
+            ->skip($start)
+            ->get();
+        }
+
+        
+        $res = [
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $results
+        ];
+       
+       return $this->successResponse($res,'All general newsletter data',200);
+     }
+
+     /**
+      * update general newsletter data by ID
+      */
+
+        public function updateGeneralNewsletterDataById(Request $request, $id)
+        {
+            $result = Contacts::find($id);
+            if(!$result){
+                return $this->errorResponse('Error',404, 'General newsletter not found');
+            }
+            $request_data = json_decode($request->getContent(), true);
+
+            // Update the contact
+           Contacts::where('id', $id)->update($request_data);
+
+            return $this->successResponse(null,'General newsletter data updated successfully',200);
+        }
+
+
     /**
      * Display a listing of the resource.
      */
