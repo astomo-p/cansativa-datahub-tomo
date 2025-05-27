@@ -51,6 +51,7 @@ class ContactDataController extends Controller
     {
         $results = ContactTypes::find(1)->contacts()
         ->selectRaw("contacts.post_code,COUNT(contacts.post_code) AS total_pharmacies")
+        ->where('contacts.is_deleted', 'false')
         ->orderBy('total_pharmacies', 'desc')
         ->groupBy('contacts.post_code')
         ->take(5)->get();
@@ -73,6 +74,7 @@ class ContactDataController extends Controller
        
         $results = ContactTypes::find(1)->contacts()
         ->select('contacts.contact_name','contacts.total_purchase')
+        ->where('contacts.is_deleted', 'false')
         ->orderBy('total_purchase', 'desc')
         ->take(5)
         ->get();
@@ -243,12 +245,14 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
             ->get();
         } else {
             $results = ContactTypes::find($this->contact_pharmacy->id)->contacts()
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -328,6 +332,7 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -342,6 +347,7 @@ class ContactDataController extends Controller
             ->count();
         } else {
             $results = ContactTypes::find($this->contact_supplier->id)->contacts()
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -383,6 +389,7 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -396,6 +403,7 @@ class ContactDataController extends Controller
             ->count();
         } else {
             $results = ContactTypes::find($this->contact_community->id)->contacts()
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -455,7 +463,9 @@ class ContactDataController extends Controller
         $search = $request->get('search');
 
         //basic response metrics
-        $records_total = ContactTypes::find($this->contact_general_newsletter->id)->contacts()->count();
+        $records_total = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+        ->where('contacts.is_deleted', 'false')
+        ->count();
         $records_filtered = $records_total;
 
         if($search){
@@ -466,6 +476,7 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -476,9 +487,11 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->count();
         } else {
             $results = ContactTypes::find($this->contact_general_newsletter->id)->contacts()
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -514,6 +527,24 @@ class ContactDataController extends Controller
         }
 
     /**
+     *  Delete general newsletter data by ID
+     */ 
+    public function deleteGeneralNewsletterDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'General newsletter not found');
+        }
+
+        // Soft delete the contact
+        $result->is_deleted = true;
+        $result->save();
+
+        return $this->successResponse(null,'General newsletter data deleted successfully',200);
+    }
+
+
+    /**
      * Add pharmacy database data
      */
 
@@ -536,6 +567,7 @@ class ContactDataController extends Controller
     {
         $results = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
         ->where('contact_parent_id', $parentId)
+        ->where('contacts.is_deleted', 'false')
         ->get();
 
         if($results->isEmpty()){
@@ -562,6 +594,7 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -573,16 +606,19 @@ class ContactDataController extends Controller
                       ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
                       ->orWhere('contacts.email', 'like', '%'.$search.'%');
             })
+            ->where('contacts.is_deleted', 'false')
             ->count();
         } else {
             $results = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
             ->where('contact_parent_id', $parentId)
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
             ->get();
             $records_filtered = ContactTypes::find($this->contact_pharmacy_db->id)->contacts()
             ->where('contact_parent_id', $parentId)
+            ->where('contacts.is_deleted', 'false')
             ->orderBy('contacts.'.$sort_column, $sort_direction)
             ->take($length)
             ->skip($start)
@@ -596,6 +632,34 @@ class ContactDataController extends Controller
         ];
 
        return $this->successResponse($res,'Pharmacy database by parent ID',200);
+    }
+
+    /**
+     * Upload file to MinIO.
+     */
+    public function minioUpload(Request $request)
+    {
+        // Validate the request
+        $request->validate([
+            'file' => 'required|file|mimes:jpg,jpeg,png,pdf|max:2048', // Adjust the validation rules as needed
+        ]);
+
+        // Get the file from the request
+        $file = $request->file('file');
+
+        // Define the path where you want to store the file
+        $path = 'uploads/contact-data/' . date('YmdHis') . $file->getExtension();
+
+        try {
+            // Check if the file already exists
+           // Store the file in MinIO
+        $file->storeAs('', $path, 'minio');
+
+        return $this->successResponse(['path' => $path], 'File uploaded successfully', 200);
+        } catch (\Exception $e) {
+            return $this->errorResponse('Error', 500, 'Failed to upload: ' . $e->getMessage());
+        }
+        
     }
 
 
@@ -658,59 +722,3 @@ class ContactDataController extends Controller
 
      
 
-    /**
-     * Display a listing of the resource.
-     */
-    public function index()
-    {
-        return view('contactdata::index');
-    }
-
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
-    {
-        return view('contactdata::create');
-    }
-
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Show the specified resource.
-     */
-    public function show($id)
-    {
-        return view('contactdata::show');
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit($id)
-    {
-        return view('contactdata::edit');
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, $id): RedirectResponse
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy($id)
-    {
-        //
-    }
-}
