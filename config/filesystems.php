@@ -58,11 +58,12 @@ return [
         'minio' => [
             'driver' => 's3',
             'endpoint' => env('MINIO_ENDPOINT'),
+            'region' => env('MINIO_REGION', 'us-east-1'),
             'use_ssl' => env('MINIO_USE_SSL', false),
             'version' => env('MINIO_VERSION', 'latest'),
             'access_key' => env('MINIO_ACCESS_KEY'),
             'secret_key' => env('MINIO_SECRET_KEY'),
-            'bucket' => env('MINIO_BUCKET'),
+            'bucket' => env('MINIO_BUCKET','cansativa-demo'),
             ]
 
     ],

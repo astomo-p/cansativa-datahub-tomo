@@ -9,6 +9,7 @@ use Illuminate\Http\Response;
 use Modules\ContactData\App\Models\Contacts;
 use Modules\ContactData\App\Models\ContactTypes;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 
 class ContactDataController extends Controller
@@ -237,6 +238,12 @@ class ContactDataController extends Controller
         $length = $request->get('length', 10);
         $search = $request->get('search');
 
+         //basic response metrics
+        $records_total = ContactTypes::find($this->contact_pharmacy->id)->contacts()
+        ->where('contacts.is_deleted', 'false')
+        ->count();
+        $records_filtered = $records_total;
+
         if($search){
             $search = trim($search);
             $results = ContactTypes::find($this->contact_pharmacy->id)->contacts()
@@ -250,6 +257,14 @@ class ContactDataController extends Controller
             ->take($length)
             ->skip($start)
             ->get();
+            $records_filtered = ContactTypes::find($this->contact_pharmacy->id)->contacts()
+            ->where(function($query) use ($search) {
+                $query->where('contacts.contact_name', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.contact_no', 'like', '%'.$search.'%')
+                      ->orWhere('contacts.email', 'like', '%'.$search.'%');
+            })
+            ->where('contacts.is_deleted', 'false')
+            ->count();
         } else {
             $results = ContactTypes::find($this->contact_pharmacy->id)->contacts()
             ->where('contacts.is_deleted', 'false')
@@ -260,15 +275,12 @@ class ContactDataController extends Controller
         }
 
         
-        $res = [];
-        foreach( $results as $result ){
-            $res[] = [
-                'contact_name' => $result->contact_name,
-                'post_code' => $result->post_code,
-                'total_purchase' => (int) $result->total_purchase
-            ];
-        }
-       return $this->successResponse($results,'All pharmacy data',200);
+        $res = [
+            'recordsTotal' => $records_total,
+            'recordsFiltered' => $records_filtered,
+            'data' => $results
+        ];
+       return $this->successResponse($res,'All pharmacy data',200);
     }
 
     /**
@@ -306,6 +318,38 @@ class ContactDataController extends Controller
        Contacts::where('id', $id)->update($request_data);
 
         return $this->successResponse(null,'Pharmacy data updated successfully',200);
+    }
+
+    /**
+     * Add pharmacy data.
+     */
+    public function addPharmacyData(Request $request)
+    {
+        $request_data = json_decode($request->getContent(), true);
+
+        // Create the contact
+       // Contacts::create($request_data);
+       Contacts::insert($request_data);
+
+        return $this->successResponse(null,'Pharmacy data added successfully',200);
+    }
+
+    /**
+     * Delete pharmacy data by ID.
+     */
+
+    public function deletePharmacyDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Pharmacy not found');
+        }
+
+        // Soft delete the contact
+        $result->is_deleted = true;
+        $result->save();
+
+        return $this->successResponse(null,'Pharmacy data deleted successfully',200);
     }
 
     /** 
@@ -378,7 +422,9 @@ class ContactDataController extends Controller
         $search = $request->get('search');
 
         //basic response metrics
-        $records_total = ContactTypes::find($this->contact_community->id)->contacts()->count();
+        $records_total = ContactTypes::find($this->contact_community->id)->contacts()
+        ->where('contacts.is_deleted', 'false')
+        ->count();
         $records_filtered = $records_total;
 
         if($search){
@@ -434,6 +480,24 @@ class ContactDataController extends Controller
 
         return $this->successResponse(null,'Community data added successfully',200);
      }
+
+     /**
+      * update community data by ID
+      */
+
+        public function updateCommunityDataById(Request $request, $id)
+        {
+            $result = Contacts::find($id);
+            if(!$result){
+                return $this->errorResponse('Error',404, 'Community not found');
+            }
+            $request_data = json_decode($request->getContent(), true);
+
+            // Update the contact
+           Contacts::where('id', $id)->update($request_data);
+
+            return $this->successResponse(null,'Community data updated successfully',200);
+        }
 
      /** 
       * add general newsletter data
@@ -648,13 +712,15 @@ class ContactDataController extends Controller
         $file = $request->file('file');
 
         // Define the path where you want to store the file
-        $path = 'uploads/contact-data/' . date('YmdHis') . $file->getExtension();
+        $path = 'uploads/contact-data/';
 
         try {
             // Check if the file already exists
            // Store the file in MinIO
-        $file->storeAs('', $path, 'minio');
+        //$file->storeAs('', $path, 'minio');
+        Storage::disk('minio')->put($path, file_get_contents($file));
 
+            // Return the path of the uploaded file
         return $this->successResponse(['path' => $path], 'File uploaded successfully', 200);
         } catch (\Exception $e) {
             return $this->errorResponse('Error', 500, 'Failed to upload: ' . $e->getMessage());
