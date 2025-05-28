@@ -10,6 +10,8 @@ use Modules\ContactData\App\Models\Contacts;
 use Modules\ContactData\App\Models\ContactTypes;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use GuzzleHttp\Psr7\Request as GuzzleRequest;
+use GuzzleHttp\Client;
 
 
 class ContactDataController extends Controller
@@ -790,6 +792,28 @@ class ContactDataController extends Controller
             return $this->errorResponse('Error', 500, 'Failed to upload: ' . $e->getMessage());
         }
         
+    }
+
+    /**
+     * Get WooCommerce customers.   
+     */
+
+    public function woocommerceCustomers(Request $request)
+    {
+        $client = new Client();
+        $guzzle = new GuzzleRequest('GET','https://bb4mgd1.myrdbx.io/wp-json/wc/v3/customers?per_page=5', [
+            'auth' => [
+                'ck_d9c04361efce8629f4a55dfcf475dbcfaa2d4cff',
+                'cs_115ff19114a66132e3fdca922f74eb28dcebac74'
+            ]
+        ]);
+
+        $result = [];
+        $promise = $client->sendAsync($guzzle)->then(function($response){
+            array_push($result,$response);
+        });
+        $promise->wait();
+        $this->successResponse($result,'Success',200);
     }
 
 

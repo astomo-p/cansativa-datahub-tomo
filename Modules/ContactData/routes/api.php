@@ -43,6 +43,7 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::get('contact/pharmacy-database/parent/{parentId}', [ContactDataController::class, "pharmacyDatabaseByParentId"]);
     Route::post('contact/pharmacy-database/add', [ContactDataController::class, "addPharmacyDatabase"]);
     Route::post('contact/minio-upload', [ContactDataController::class, "minioUpload"]);
+    Route::get('woocommerce/customers',[ContactDataController::class,'woocommerceCustomers']);  
 });
 
 Route::middleware(['auth:sanctum'])->prefix('v1')->name('api.')->group(function () {
