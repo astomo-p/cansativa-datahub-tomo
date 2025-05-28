@@ -365,7 +365,9 @@ class ContactDataController extends Controller
         $search = $request->get('search');
 
         //basic response metrics
-        $records_total = ContactTypes::find($this->contact_supplier->id)->contacts()->count();
+        $records_total = ContactTypes::find($this->contact_supplier->id)->contacts()
+        ->where('contacts.is_deleted', 'false')
+        ->count();
         $records_filtered = $records_total;
 
         if($search){
@@ -406,6 +408,68 @@ class ContactDataController extends Controller
         ];
        
        return $this->successResponse($res,'All supplier data',200);
+    }
+
+    /**
+     * Add supplier data
+     */
+
+     public function addSupplierData(Request $request)
+     {
+        $request_data = json_decode($request->getContent(), true);
+
+        // Create the contact
+       // Contacts::create($request_data);
+       Contacts::insert($request_data);
+
+        return $this->successResponse(null,'Supplier data added successfully',200);
+     }
+
+     /**
+      * Update supplier data by ID
+      */
+
+        public function updateSupplierDataById(Request $request, $id)
+        {
+            $result = Contacts::find($id);
+            if(!$result){
+                return $this->errorResponse('Error',404, 'Supplier not found');
+            }
+            $request_data = json_decode($request->getContent(), true);
+
+            // Update the contact
+           Contacts::where('id', $id)->update($request_data);
+
+            return $this->successResponse(null,'Supplier data updated successfully',200);
+        }
+      
+     /**
+      * Get supplier data by ID
+       */   
+    public function supplierDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Supplier not found');
+        }
+       return $this->successResponse($result,'Supplier data by ID',200);
+    }
+
+    /**
+     * Delete supplier data by ID
+     */
+    public function deleteSupplierDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Supplier not found');
+        }
+
+        // Soft delete the contact
+        $result->is_deleted = true;
+        $result->save();
+
+        return $this->successResponse(null,'Supplier data deleted successfully',200);
     }
 
     /**
