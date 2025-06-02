@@ -810,8 +810,38 @@ class ContactDataController extends Controller
                         'wp_api' => true,
                         'version' => 'wc/v3'
                 ]
-                );
-        return $this->successResponse($woocommerce->get('customers'),'Success',200);
+                );        
+        $woo_response = $woocommerce->get('customers?page=1&per_page=3');
+        $id = Contacts::all()->last()->id;
+        foreach($woo_response as $value => $key){
+        /* $contact = new Contacts();
+        $contact->id += $id ;
+        $contact->contact_name = $key[$value]->data["billing"]["company"];
+        $contact->contact_no = "";
+        $contact->address = "-";
+        $contact->post_code = $key[$value]->data["billing"]["post_code"];
+        $contact->city = $key[$value]->data["billing"]["city"];
+        $contact->country = $key[$value]->data["billing"]["country"];
+        $contact->contact_person = "-";
+        $contact->email = $key[$value]->data["billing"]["email"];
+        $contact->phone_no = "-";
+        $contact->amount_purchase = "0.00";
+        $contact->total_purchase = "0.00";
+        $contact->average_purchase = "0.00";
+        $contact->last_purchase_date = "2025-05-20";
+        $contact->cansativa_newsletter = null;
+        $contact->community_user = null;
+        $contact->whatsapp_subscription = null;
+        $contact->contact_type_id = 1;
+        $contact->contact_parent_id = null;
+        $contact->created_by = 12;
+        $contact->created_date = date("Y-m-d H:i:s");
+        $contact->updated_by = 12;
+        $contact->updated_date = date("Y-m_d H:i:s");
+        $contact->save(); */
+        }
+
+        return $this->successResponse([],'Success',200);
     }
 
 
