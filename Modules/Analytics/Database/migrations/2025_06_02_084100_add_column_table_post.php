@@ -12,11 +12,9 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('posts', function (Blueprint $table) {
-            // Change the column type and set default to NULL
-            $table->string('title',256)->change();
-            $table->string('status',128)->change();
-            $table->text('content')->nullable()->change();
-            $table->string('tags',128)->nullable()->change();
+            $table->boolean('cta_setting')->nullable();
+            $table->string('cta_option',256)->nullable();
+            $table->string('cta_link',256)->nullable();
         });
     }
 
@@ -25,6 +23,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('', function (Blueprint $table) {
+            
+        });
     }
 };

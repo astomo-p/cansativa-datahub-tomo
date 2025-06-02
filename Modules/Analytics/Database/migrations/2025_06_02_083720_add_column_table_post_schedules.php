@@ -11,12 +11,8 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('posts', function (Blueprint $table) {
-            // Change the column type and set default to NULL
-            $table->string('title',256)->change();
-            $table->string('status',128)->change();
-            $table->text('content')->nullable()->change();
-            $table->string('tags',128)->nullable()->change();
+        Schema::table('post_schedules', function (Blueprint $table) {
+            $table->char('schedule_time',128)->nullable();
         });
     }
 
@@ -25,6 +21,8 @@ return new class extends Migration
      */
     public function down(): void
     {
-        //
+        Schema::table('', function (Blueprint $table) {
+            
+        });
     }
 };
