@@ -813,17 +813,17 @@ class ContactDataController extends Controller
                 );        
         $woo_response = $woocommerce->get('customers?page=1&per_page=3');
         $id = Contacts::all()->last()->id;
-        foreach($woo_response as $value => $key){
-        /* $contact = new Contacts();
+        foreach($woo_response as $key){
+        $contact = new Contacts();
         $contact->id += $id ;
-        $contact->contact_name = $key[$value]->data["billing"]["company"];
+        $contact->contact_name = $key->billing->company;
         $contact->contact_no = "";
         $contact->address = "-";
-        $contact->post_code = $key[$value]->data["billing"]["post_code"];
-        $contact->city = $key[$value]->data["billing"]["city"];
-        $contact->country = $key[$value]->data["billing"]["country"];
+        $contact->post_code = $key->billing->post_code;
+        $contact->city = $key->billing->city;
+        $contact->country = $key->billing["country"];
         $contact->contact_person = "-";
-        $contact->email = $key[$value]->data["billing"]["email"];
+        $contact->email = $key->billing["email"];
         $contact->phone_no = "-";
         $contact->amount_purchase = "0.00";
         $contact->total_purchase = "0.00";
@@ -838,10 +838,12 @@ class ContactDataController extends Controller
         $contact->created_date = date("Y-m-d H:i:s");
         $contact->updated_by = 12;
         $contact->updated_date = date("Y-m_d H:i:s");
-        $contact->save(); */
+        $contact->save();
         }
 
-        return $this->successResponse([],'Success',200);
+        return $this->successResponse([
+            'type' => dump($woo_response),
+        ],'Success',200);
     }
 
 
