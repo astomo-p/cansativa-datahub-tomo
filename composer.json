@@ -21,7 +21,8 @@
         "google/analytics-data": "^0.22.2",
         "league/flysystem-aws-s3-v3": "^3.0",
         "phpoffice/phpspreadsheet": "^4.3.1",
-        "doctrine/dbal": "^4.2.3"
+        "doctrine/dbal": "^4.2.3",
+        "automattic/woocommerce":"^3.1.0"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9.1",

@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use GuzzleHttp\Psr7\Request as GuzzleRequest;
 use GuzzleHttp\Client;
+use Automattic\WooCommerce\Client as WooClient;
 
 
 class ContactDataController extends Controller
@@ -800,29 +801,17 @@ class ContactDataController extends Controller
 
     public function woocommerceCustomers(Request $request)
     {
-        /* $client = new Client();
-        $guzzle = new GuzzleRequest('GET','https://bb4mgd1.myrdbx.io/wp-json/wc/v3/customers?per_page=5', [
-            'auth' => [
+       
+        $woocommerce = new WooClient(
+                'https://bb4mgd1.myrdbx.io',
                 'ck_d9c04361efce8629f4a55dfcf475dbcfaa2d4cff',
-                'cs_115ff19114a66132e3fdca922f74eb28dcebac74'
-            ]
-        ]);
-
-        $result = [];
-        $promise = $client->sendAsync($guzzle)->then(function($response){
-            array_push($result,$response);
-        });
-        $promise->wait(); */
-        $client = new Client([
-            'base_uri' => 'https://bb4mgd1.myrdbx.io/wp-json/wc/v3/'
-        ]);
-        $result = $client->request('GET', 'customers', [
-            'json' => [
-                'per_page' => 5,
-                'page' => 1
-            ]
-        ]);
-        return $this->successResponse($result,'Success',200);
+                'cs_115ff19114a66132e3fdca922f74eb28dcebac74',
+                [
+                        'wp_api' => true,
+                        'version' => 'wc/v3'
+                ]
+                );
+        return $this->successResponse($woocommerce->get('customers'),'Success',200);
     }
 
 
