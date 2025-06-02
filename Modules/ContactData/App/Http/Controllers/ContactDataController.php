@@ -800,7 +800,7 @@ class ContactDataController extends Controller
 
     public function woocommerceCustomers(Request $request)
     {
-        $client = new Client();
+        /* $client = new Client();
         $guzzle = new GuzzleRequest('GET','https://bb4mgd1.myrdbx.io/wp-json/wc/v3/customers?per_page=5', [
             'auth' => [
                 'ck_d9c04361efce8629f4a55dfcf475dbcfaa2d4cff',
@@ -812,8 +812,17 @@ class ContactDataController extends Controller
         $promise = $client->sendAsync($guzzle)->then(function($response){
             array_push($result,$response);
         });
-        $promise->wait();
-        $this->successResponse($result,'Success',200);
+        $promise->wait(); */
+        $client = new Client([
+            'base_uri' => 'https://bb4mgd1.myrdbx.io/wp-json/wc/v3/'
+        ]);
+        $result = $client->request('GET', 'customers', [
+            'json' => [
+                'per_page' => 5,
+                'page' => 1
+            ]
+        ]);
+        return $this->successResponse($result,'Success',200);
     }
 
 
