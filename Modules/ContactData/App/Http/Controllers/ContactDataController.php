@@ -348,12 +348,21 @@ class ContactDataController extends Controller
             return $this->errorResponse('Error',404, 'Pharmacy not found');
         }
 
-        // Soft delete the contact
-        $result->is_deleted = true;
-        $result->save();
+        DB::beginTransaction();
+        try {
+            // Soft Delete the contact childs
+            Contacts::find($id)->pharmacyChilds()->update(['is_deleted' => true]);
+            // Soft delete the contact
+            $result->is_deleted = true;
+            $result->save();
+            DB::commit();
+            return $this->successResponse(null,'Pharmacy data deleted successfully',200);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Error',500, 'Failed to delete pharmacy data');
+        }
 
-        return $this->successResponse(null,'Pharmacy data deleted successfully',200);
-    }
+         }
 
     /** 
      * Get all supplier data.
@@ -806,6 +815,72 @@ class ContactDataController extends Controller
 
        return $this->successResponse($res,'Pharmacy database by parent ID',200);
     }
+
+    /**
+     * Update pharmacy database by ID.
+     */
+
+    public function updatePharmacyDatabaseByParentIdAndId(Request $request, $parentId, $id)
+    {
+        $result = Contacts::find($parentId)->pharmacyChilds()->where('id', $id)->get();
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Pharmacy database not found');
+        }
+
+        DB::beginTransaction();
+        $request_data = json_decode($request->getContent(), true);
+        try {
+            // Update the contact childs
+            Contacts::find($parentId)->pharmacyChilds()
+            ->where('id', $id)
+            ->update($request_data);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Error',500, 'Failed to update pharmacy database: ' . $e->getMessage());
+        }
+
+        return $this->successResponse(null,'Pharmacy database data updated successfully',200);
+    }
+
+    /**
+     * Get pharmacy database data by ID.
+     */
+
+    public function pharmacyDatabaseByParentIdAndId(Request $request, $parentId, $id)
+    {
+        $parent = Contacts::find($parentId);
+        if(!$parent){
+            return $this->errorResponse('Error',404, 'Pharmacy database not found');
+        }
+        $result = $parent->pharmacyChilds()->where('id', $id)->first();
+
+       return $this->successResponse($result,'Pharmacy database data by ID',200);
+    }
+
+    /**
+     * Delete pharmacy database by id
+     */
+
+     public function deletePharmacyDatabaseByParentIdAndId($parentId, $id)
+     {
+        $parent = Contacts::find($parentId);
+        if(!$parent){
+            return $this->errorResponse('Error',404, 'Pharmacy database not found');
+        }
+        
+        DB::beginTransaction();
+        try {
+            // Soft delete the contact
+            Contacts::find($id)->update(['is_deleted' => true]);
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return $this->errorResponse('Error',500, 'Failed to delete pharmacy database: ' . $e->getMessage());
+        }
+
+        return $this->successResponse(null,'Pharmacy database data deleted successfully',200);
+     }
 
     /**
      * Upload file to MinIO.

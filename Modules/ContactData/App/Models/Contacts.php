@@ -30,6 +30,13 @@ class Contacts extends Model
         return $this->save();
     }
 
+    /** relation */
+
+    public function pharmacyChilds()
+    {
+        return $this->hasMany(Contacts::class, 'contact_parent_id', 'id');
+    }
+
     protected static function newFactory()
     {
         //return ContactsFactory::new();
