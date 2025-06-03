@@ -42,6 +42,9 @@ Route::prefix('v1')->name('api.')->group(function () {
     Route::delete('contact/general-newsletter-data/id/{id}', [ContactDataController::class, "deleteGeneralNewsletterDataById"]);
     Route::get('contact/pharmacy-database/parent/{parentId}', [ContactDataController::class, "pharmacyDatabaseByParentId"]);
     Route::post('contact/pharmacy-database/add', [ContactDataController::class, "addPharmacyDatabase"]);
+    Route::get('contact/pharmacy-database/parent/{parentId}/id/{id}', [ContactDataController::class, "pharmacyDatabaseByParentIdAndId"]);
+    Route::put('contact/pharmacy-database/parent/{parentId}/id/{id}', [ContactDataController::class, "updatePharmacyDatabaseByParentIdAndId"]);
+    Route::delete('contact/pharmacy-database/parent/{parentId}/id/{id}', [ContactDataController::class, "deletePharmacyDatabaseByParentIdAndId"]);
     Route::post('contact/minio-upload', [ContactDataController::class, "minioUpload"]);
     Route::get('woocommerce/customers',[ContactDataController::class,'woocommerceCustomers']);  
 });

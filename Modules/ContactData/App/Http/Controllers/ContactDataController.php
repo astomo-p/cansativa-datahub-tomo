@@ -566,6 +566,36 @@ class ContactDataController extends Controller
             return $this->successResponse(null,'Community data updated successfully',200);
         }
 
+      /**
+       * get community data by id
+       *  */  
+
+      public function communityDataById(Request $request,$id)
+      {
+         $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'Community not found');
+        }
+       return $this->successResponse($result,'Community data by ID',200);
+      } 
+
+      /**
+       * delete community data by id
+       */
+        public function deleteCommunityDataById($id)
+        {
+            $result = Contacts::find($id);
+            if(!$result){
+                return $this->errorResponse('Error',404, 'Community not found');
+            }
+
+            // Soft delete the contact
+            $result->is_deleted = true;
+            $result->save();
+
+            return $this->successResponse(null,'Community data deleted successfully',200);
+        }
+
      /** 
       * add general newsletter data
       */
@@ -674,6 +704,18 @@ class ContactDataController extends Controller
         return $this->successResponse(null,'General newsletter data deleted successfully',200);
     }
 
+    /**
+     * Get general newsletter data by ID
+     */
+
+    public function generalNewsletterDataById($id)
+    {
+        $result = Contacts::find($id);
+        if(!$result){
+            return $this->errorResponse('Error',404, 'General newsletter not found');
+        }
+       return $this->successResponse($result,'General newsletter data by ID',200);
+    }
 
     /**
      * Add pharmacy database data
