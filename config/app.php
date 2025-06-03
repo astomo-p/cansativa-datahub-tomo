@@ -159,10 +159,10 @@ return [
         /*
          * Package Service Providers...
          */
-        Spatie\Permission\PermissionServiceProvider::class,
-        Barryvdh\Debugbar\ServiceProvider::class,
-        Creativeorange\Gravatar\GravatarServiceProvider::class,
-        RealRashid\SweetAlert\SweetAlertServiceProvider::class,
+       // Spatie\Permission\PermissionServiceProvider::class,
+       // Barryvdh\Debugbar\ServiceProvider::class,
+      //  Creativeorange\Gravatar\GravatarServiceProvider::class,
+      //  RealRashid\SweetAlert\SweetAlertServiceProvider::class,
 
         /*
          * Application Service Providers...
